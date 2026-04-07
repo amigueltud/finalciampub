@@ -1,0 +1,25 @@
+ARG BASE_IMAGE
+ARG KC_VERSION
+
+FROM $BASE_IMAGE AS deploy
+ARG KC_VERSION
+COPY ./keycloak/keycloak-${KC_VERSION}.fspf_build /keycloak
+RUN ls -ld /keycloak
+RUN chmod +x /keycloak/bin/*.sh
+WORKDIR /keycloak
+ENV JAVA_TOOL_OPTIONS="-Xmx2048m"
+ENV KEYCLOAK_HOME="/keycloak"
+ENV PATH="$PATH:$KEYCLOAK_HOME/bin"
+
+COPY ./keycloak/build-start.phases.sh /build-start.sh
+RUN ls -l /build-start.sh
+
+RUN apk update
+RUN apk add lynx nmap openssl
+
+COPY ./keycloak/encrypted-files /fspf/encrypted-files
+COPY ./keycloak/fspf-file/fs.fspf /fspf/fs.fspf
+
+RUN cat /etc/sgx-musl.conf
+
+CMD [ "./bin/kc.sh", "start-dev" ]

@@ -1,0 +1,21 @@
+ARG BASE_IMAGE
+
+FROM $BASE_IMAGE as build
+
+COPY encrypted-files /fspf/encrypted-files
+COPY fspf-file/fs.fspf /fspf/fs.fspf
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+RUN apk update 1>/dev/null 2>/dev/null
+RUN apk add nmap curl jq 1>/dev/null 2>/dev/null
+RUN pip3 install --upgrade certifi
+RUN pip config list -v
+RUN pip3 install --upgrade requests
+
+RUN unset PYTHONHOME
+RUN unset PYTHON_PIP_VERSION
+RUN unset PYTHON_VERSION      
+
+RUN mkdir /flask
+COPY run.sh /flask/run.sh
